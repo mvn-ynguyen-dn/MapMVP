@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MapMVP</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="location_not_detected">Cannot connect location.</string>
+    <string name="location_connect_faild">Location connect faild</string>
+    <string name="location_connect_suspended">Locatio connect supended</string>
+    <string name="cannot_connect_internet">Cannot connect internet</string>
+    <string name="show_click_marker">Marker Click</string>
+</resources>
