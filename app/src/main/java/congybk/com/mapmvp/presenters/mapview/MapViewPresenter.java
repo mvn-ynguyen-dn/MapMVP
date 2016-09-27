@@ -142,7 +142,7 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
             return;
         }
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        Log.i("TAG",location+"");
+        Log.i("TAG", location + "");
         if (location != null) {
             mMyLatLng = new LatLng(location.getLatitude(), location.getLongitude());
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMyLatLng, 16));

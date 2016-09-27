@@ -11,10 +11,16 @@ import congybk.com.mapmvp.models.objects.ResultMarker;
  */
 public interface MapViewContract {
     void loadMap();
+
     void showError(String message);
+
     void showClickMarker();
+
     void showErrorLocation();
+
     void showErrorNetWork();
+
     void onMapLoaded();
+
     void loadMarkerSuccess(List<ResultMarker> resultMarkers);
 }
