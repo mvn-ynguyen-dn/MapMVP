@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -16,7 +17,9 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
@@ -35,12 +38,13 @@ import congybk.com.mapmvp.views.mapview.contract.MapViewContract;
  * Created by YNC on 9/24/2016.
  */
 @EActivity(R.layout.activity_map_view)
-public class MapViewActivity extends BaseActivity implements MapViewContract, OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
+public class MapViewActivity extends BaseActivity implements MapViewContract, OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveListener {
     @ViewById(R.id.progressBar)
     ProgressBar mProgressBar;
     @Bean
     MapViewPresenter mMapViewPresenter;
-    private GoogleApiClient mGoogleApiClient;
+
+    GoogleMap mMap;
 
     @Override
     protected void init() {
@@ -52,11 +56,7 @@ public class MapViewActivity extends BaseActivity implements MapViewContract, On
     public void loadMap() {
         mProgressBar.setVisibility(View.VISIBLE);
         ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
+        mMapViewPresenter.setUpLocation();
     }
 
     @Override
@@ -82,9 +82,9 @@ public class MapViewActivity extends BaseActivity implements MapViewContract, On
     @Override
     public void onMapReady(GoogleMap map) {
         mMapViewPresenter.loadMap(map);
+        mMap = map;
         map.setOnMarkerClickListener(this);
-
-
+        map.setOnCameraMoveListener(this);
     }
 
     @Override
@@ -102,41 +102,27 @@ public class MapViewActivity extends BaseActivity implements MapViewContract, On
     @Override
     protected void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
+        mMapViewPresenter.connectLocation();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            return;
-        }
-        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        mMapViewPresenter.loadLocation(location);
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        showLongToast(getString(R.string.location_connect_suspended));
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        showLongToast(getString(R.string.location_connect_faild));
+        mMapViewPresenter.disConnectLocation();
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
         mMapViewPresenter.clickMarker(marker);
         return false;
+    }
+
+    @Override
+    public void onCameraMove() {
+        mMap.clear();
+        LatLng latLng = mMap.getCameraPosition().target;
+        mMap.addMarker(new MarkerOptions()
+                .position(latLng)
+                .title("Marker"));
     }
 }
