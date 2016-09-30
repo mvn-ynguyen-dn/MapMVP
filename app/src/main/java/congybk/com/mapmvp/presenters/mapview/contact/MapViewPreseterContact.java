@@ -10,4 +10,5 @@ public interface MapViewPreseterContact {
     void loadLocationError();
 
     void loadLocationSucces(Location location);
+
 }

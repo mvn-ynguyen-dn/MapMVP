@@ -31,7 +31,6 @@ public class LocationTracker implements GoogleApiClient.ConnectionCallbacks, Goo
     private MapViewPreseterContact mMapViewPresenterContact;
 
     public void init(MapViewPreseterContact mapViewPreseterContact) {
-        Log.i("TAG","init----------------------init"+mContext.toString());
         mMapViewPresenterContact = mapViewPreseterContact;
         mGoogleApiClient = new GoogleApiClient.Builder(mContext)
                 .addConnectionCallbacks(this)
@@ -42,15 +41,12 @@ public class LocationTracker implements GoogleApiClient.ConnectionCallbacks, Goo
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.i("TAG", "=====================================<>=============================");
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.i("TAG","------------------------------------------------------>");
             mMapViewPresenterContact.loadLocationError();
             return;
 
         }
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        Log.i("TAG", location + "");
         if (location != null) {
             mMapViewPresenterContact.loadLocationSucces(location);
 

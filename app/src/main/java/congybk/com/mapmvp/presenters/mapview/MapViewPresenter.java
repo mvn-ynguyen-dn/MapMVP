@@ -32,7 +32,7 @@ import congybk.com.mapmvp.models.location.LocationTracker;
 import congybk.com.mapmvp.models.network.core.ApiClient;
 import congybk.com.mapmvp.models.objects.ResultMarker;
 import congybk.com.mapmvp.presenters.mapview.contact.MapViewPreseterContact;
-import congybk.com.mapmvp.views.mapview.contract.MapViewContract;
+import congybk.com.mapmvp.views.mapview.contact.MapViewContract;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -118,6 +118,7 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
     @Override
     public void loadLocationSucces(Location location) {
         mMyLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-        mMapViewContract.addMarker(new ResultMarker("ME", String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude())));
+        mMapViewContract.addMarkerLocation(new ResultMarker("ME", String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude())));
     }
+
 }

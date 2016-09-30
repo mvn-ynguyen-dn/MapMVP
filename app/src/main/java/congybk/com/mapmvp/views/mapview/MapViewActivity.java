@@ -1,8 +1,20 @@
 package congybk.com.mapmvp.views.mapview;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -20,14 +32,14 @@ import congybk.com.mapmvp.R;
 import congybk.com.mapmvp.models.objects.ResultMarker;
 import congybk.com.mapmvp.presenters.mapview.MapViewPresenter;
 import congybk.com.mapmvp.views.BaseActivity;
-import congybk.com.mapmvp.views.mapview.contract.MapView;
+import congybk.com.mapmvp.views.mapview.contact.MapViewContract;
 
 /**
  * Copyright © 2016 AsianTech inc.
  * Created by YNC on 9/24/2016.
  */
 @EActivity(R.layout.activity_map_view)
-public class MapViewActivity extends BaseActivity implements MapView, OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveListener {
+public class MapViewActivity extends BaseActivity implements MapViewContract, OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveListener {
     @ViewById(R.id.progressBar)
     ProgressBar mProgressBar;
     @Bean
@@ -47,6 +59,17 @@ public class MapViewActivity extends BaseActivity implements MapView, OnMapReady
         double latitude = Double.parseDouble(marker.getLatitude());
         double longitude = Double.parseDouble(marker.getLongitude());
         LatLng latLng = new LatLng(latitude, longitude);
+        mMap.addMarker(new MarkerOptions()
+                .position(latLng)
+                .title(marker.getName()));
+    }
+
+    @Override
+    public void addMarkerLocation(ResultMarker marker) {
+        double latitude = Double.parseDouble(marker.getLatitude());
+        double longitude = Double.parseDouble(marker.getLongitude());
+        LatLng latLng = new LatLng(latitude, longitude);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14));
         mMap.addMarker(new MarkerOptions()
                 .position(latLng)
                 .title(marker.getName()));
@@ -83,6 +106,11 @@ public class MapViewActivity extends BaseActivity implements MapView, OnMapReady
     @Override
     public void onMapLoaded() {
         mProgressBar.setVisibility(View.GONE);
+
+    }
+
+    @Override
+    public void moveLocation(Location location) {
 
     }
 
