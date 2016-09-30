@@ -21,14 +21,17 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import congybk.com.mapmvp.models.location.LocationTracker;
 import congybk.com.mapmvp.models.network.core.ApiClient;
 import congybk.com.mapmvp.models.objects.ResultMarker;
+import congybk.com.mapmvp.presenters.mapview.contact.MapViewPreseterContact;
 import congybk.com.mapmvp.views.mapview.contract.MapViewContract;
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -40,17 +43,18 @@ import retrofit.client.Response;
  */
 @EBean
 public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback<List<ResultMarker>>
-        , GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    private GoogleMap mMap;
+        , MapViewPreseterContact {
     private LatLng mMyLatLng;
     private MapViewContract mMapViewContract;
-    private GoogleApiClient mGoogleApiClient;
     @RootContext
     Context mContext;
 
+    @Bean
+    LocationTracker mLocationTracker;
+
     public void init(MapViewContract mapViewContract) {
         mMapViewContract = mapViewContract;
-        mapViewContract.loadMap();
+        mLocationTracker.init(this);
         ApiClient.call().getListMarker(this);
     }
 
@@ -58,7 +62,6 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
         if (!isNetworkConnected()) {
             mMapViewContract.showErrorNetWork();
         }
-        mMap = map;
         map.setOnMapLoadedCallback(this);
     }
 
@@ -67,22 +70,9 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
         mMapViewContract.onMapLoaded();
     }
 
-    public void setUpLocation() {
-        mGoogleApiClient = new GoogleApiClient.Builder(mContext)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-    }
-
     public void addListMarker(List<ResultMarker> resultMarkers) {
         for (ResultMarker marker : resultMarkers) {
-            double latitude = Double.parseDouble(marker.getLatitude());
-            double longitude = Double.parseDouble(marker.getLongitude());
-            LatLng latLng = new LatLng(latitude, longitude);
-            mMap.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .title(marker.getName()));
+            mMapViewContract.addMarker(marker);
         }
     }
 
@@ -110,48 +100,24 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
         mMapViewContract.showError(error.getMessage());
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Log.i("TAG", "================================>");
-        loadLocation();
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        mMapViewContract.showErrorLocation();
-    }
 
     public void connectLocation() {
-        mGoogleApiClient.connect();
+        mLocationTracker.connectLocation();
     }
 
     public void disConnectLocation() {
-        if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
+        mLocationTracker.disconnectLocation();
     }
 
-    private void loadLocation() {
-        Log.i("TAG", "=====================================<>=============================");
-        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        Log.i("TAG", location + "");
-        if (location != null) {
-            mMyLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMyLatLng, 16));
-            mMap.addMarker(new MarkerOptions()
-                    .position(mMyLatLng)
-                    .title("ME"));
+    @Override
+    public void loadLocationError() {
+        mMapViewContract.showErrorLocation();
+        Log.i("TAG","Error Location");
+    }
 
-        } else {
-            mMapViewContract.showErrorLocation();
-        }
+    @Override
+    public void loadLocationSucces(Location location) {
+        mMyLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        mMapViewContract.addMarker(new ResultMarker("ME", String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude())));
     }
 }

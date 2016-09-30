@@ -10,7 +10,8 @@ import congybk.com.mapmvp.models.objects.ResultMarker;
  * Created by YNC on 9/24/2016.
  */
 public interface MapViewContract {
-    void loadMap();
+
+    void addMarker(ResultMarker marker);
 
     void showError(String message);
 

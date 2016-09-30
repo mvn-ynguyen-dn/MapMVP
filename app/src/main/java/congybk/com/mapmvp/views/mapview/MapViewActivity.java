@@ -49,14 +49,18 @@ public class MapViewActivity extends BaseActivity implements MapViewContract, On
     @Override
     protected void init() {
         mMapViewPresenter.init(this);
-
+        mProgressBar.setVisibility(View.VISIBLE);
+        ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
     }
 
     @Override
-    public void loadMap() {
-        mProgressBar.setVisibility(View.VISIBLE);
-        ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
-        mMapViewPresenter.setUpLocation();
+    public void addMarker(ResultMarker marker) {
+        double latitude = Double.parseDouble(marker.getLatitude());
+        double longitude = Double.parseDouble(marker.getLongitude());
+        LatLng latLng = new LatLng(latitude, longitude);
+        mMap.addMarker(new MarkerOptions()
+                .position(latLng)
+                .title(marker.getName()));
     }
 
     @Override
