@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -24,12 +23,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import congybk.com.mapmvp.models.network.core.ApiClient;
 import congybk.com.mapmvp.models.objects.ResultMarker;
-import congybk.com.mapmvp.views.mapview.contract.MapViewContract;
+import congybk.com.mapmvp.views.mapview.contract.MapView;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -43,12 +41,12 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
         , GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private GoogleMap mMap;
     private LatLng mMyLatLng;
-    private MapViewContract mMapViewContract;
+    private MapView mMapViewContract;
     private GoogleApiClient mGoogleApiClient;
     @RootContext
     Context mContext;
 
-    public void init(MapViewContract mapViewContract) {
+    public void init(MapView mapViewContract) {
         mMapViewContract = mapViewContract;
         mapViewContract.loadMap();
         ApiClient.call().getListMarker(this);
@@ -100,7 +98,6 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
 
     @Override
     public void success(List<ResultMarker> resultMarkers, Response response) {
-        Log.i("TAG", "successs: " + resultMarkers.size());
         mMapViewContract.loadMarkerSuccess(resultMarkers);
 
     }
@@ -112,7 +109,6 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.i("TAG", "================================>");
         loadLocation();
     }
 
@@ -137,12 +133,10 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
     }
 
     private void loadLocation() {
-        Log.i("TAG", "=====================================<>=============================");
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        Log.i("TAG", location + "");
         if (location != null) {
             mMyLatLng = new LatLng(location.getLatitude(), location.getLongitude());
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMyLatLng, 16));
