@@ -10,7 +10,7 @@ import congybk.com.mapmvp.models.objects.ResultMarker;
  * Copyright © 2016 AsianTech inc.
  * Created by YNC on 9/30/2016.
  */
-public interface MapViewContract {
+public interface MapContractView {
 
     void addMarker(ResultMarker marker);
 
