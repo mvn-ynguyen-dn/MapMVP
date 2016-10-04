@@ -1,6 +1,5 @@
 package congybk.com.mapmvp.views.mapview;
 
-import android.location.Location;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -16,8 +15,6 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
-import java.util.List;
-
 import congybk.com.mapmvp.R;
 import congybk.com.mapmvp.models.objects.ResultMarker;
 import congybk.com.mapmvp.presenters.mapview.MapViewPresenter;
@@ -29,7 +26,7 @@ import congybk.com.mapmvp.views.mapview.contact.MapContractView;
  * Created by YNC on 9/24/2016.
  */
 @EActivity(R.layout.activity_map_view)
-public class MapViewActivity extends BaseActivity implements MapContractView, OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveListener {
+public class MapViewActivity extends BaseActivity implements MapContractView, OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnCameraMoveListener {
     @ViewById(R.id.progressBar)
     ProgressBar mProgressBar;
     @Bean
@@ -38,10 +35,41 @@ public class MapViewActivity extends BaseActivity implements MapContractView, On
     private GoogleMap mMap;
 
     @Override
-    protected void init() {
+    protected void onStart() {
+        super.onStart();
+        mMapViewPresenter.connectLocation();
+    }
+
+
+    @Override
+    protected void afterViews() {
         mMapViewPresenter.init(this);
-        mProgressBar.setVisibility(View.VISIBLE);
         ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        mMapViewPresenter.clickMarker(marker);
+        return false;
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        mMapViewPresenter.loadMap();
+        mMap = map;
+        map.setOnMarkerClickListener(this);
+        map.setOnCameraMoveListener(this);
+    }
+
+    @Override
+    public void onCameraMove() {
+        mMapViewPresenter.moveMap(mMap.getCameraPosition().target);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mMapViewPresenter.disConnectLocation();
     }
 
     @Override
@@ -85,54 +113,22 @@ public class MapViewActivity extends BaseActivity implements MapContractView, On
     }
 
     @Override
-    public void onMapReady(GoogleMap map) {
-        mMapViewPresenter.loadMap(map);
-        mMap = map;
-        map.setOnMarkerClickListener(this);
-        map.setOnCameraMoveListener(this);
-    }
-
-    @Override
-    public void onMapLoaded() {
-        mProgressBar.setVisibility(View.GONE);
-
-    }
-
-    @Override
-    public void moveLocation(Location location) {
-
-    }
-
-    @Override
-    public void loadMarkerSuccess(List<ResultMarker> resultMarkers) {
-        mMapViewPresenter.addListMarker(resultMarkers);
-    }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mMapViewPresenter.connectLocation();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mMapViewPresenter.disConnectLocation();
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        mMapViewPresenter.clickMarker(marker);
-        return false;
-    }
-
-    @Override
-    public void onCameraMove() {
+    public void moveLocation(LatLng location) {
         mMap.clear();
-        LatLng latLng = mMap.getCameraPosition().target;
         mMap.addMarker(new MarkerOptions()
-                .position(latLng)
+                .position(location)
                 .title("Marker"));
     }
+
+    @Override
+    public void loadFinish() {
+        mProgressBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void loadStart() {
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
+
+
 }

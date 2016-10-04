@@ -1,8 +1,6 @@
 package congybk.com.mapmvp.views.mapview.contact;
 
-import android.location.Location;
-
-import java.util.List;
+import com.google.android.gms.maps.model.LatLng;
 
 import congybk.com.mapmvp.models.objects.ResultMarker;
 
@@ -24,9 +22,9 @@ public interface MapContractView {
 
     void showErrorNetWork();
 
-    void onMapLoaded();
+    void moveLocation(LatLng location);
 
-    void moveLocation(Location location);
+    void loadFinish();
 
-    void loadMarkerSuccess(List<ResultMarker> resultMarkers);
+    void loadStart();
 }

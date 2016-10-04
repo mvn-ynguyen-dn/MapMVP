@@ -13,7 +13,7 @@ import org.androidannotations.annotations.EActivity;
 @EActivity
 public abstract class BaseActivity extends AppCompatActivity {
     @AfterViews
-    protected abstract void init();
+    protected abstract void afterViews();
 
     public void showShortToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();

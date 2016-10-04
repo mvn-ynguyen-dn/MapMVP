@@ -5,7 +5,6 @@ import android.content.Context;
 import android.location.Location;
 import android.net.ConnectivityManager;
 
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
@@ -29,7 +28,7 @@ import retrofit.client.Response;
  * Created by YNC on 9/24/2016.
  */
 @EBean
-public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback<List<ResultMarker>>
+public class MapViewPresenter implements Callback<List<ResultMarker>>
         , MapViewPreseterContact {
     private LatLng mMyLatLng;
     private MapContractView mMapViewContract;
@@ -45,25 +44,13 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
         ApiClient.call().getListMarker(this);
     }
 
-    public void loadMap(GoogleMap map) {
-        if (!isNetworkConnected()) {
+    public void loadMap() {
+        if (!checkNetworkConnected()) {
             mMapViewContract.showErrorNetWork();
         }
-        map.setOnMapLoadedCallback(this);
     }
 
-    @Override
-    public void onMapLoaded() {
-        mMapViewContract.onMapLoaded();
-    }
-
-    public void addListMarker(List<ResultMarker> resultMarkers) {
-        for (ResultMarker marker : resultMarkers) {
-            mMapViewContract.addMarker(marker);
-        }
-    }
-
-    private boolean isNetworkConnected() {
+    private boolean checkNetworkConnected() {
         ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
     }
@@ -75,19 +62,8 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
         }
     }
 
-    @Override
-    public void success(List<ResultMarker> resultMarkers, Response response) {
-        mMapViewContract.loadMarkerSuccess(resultMarkers);
-
-    }
-
-    @Override
-    public void failure(RetrofitError error) {
-        mMapViewContract.showError(error.getMessage());
-    }
-
-
     public void connectLocation() {
+        mMapViewContract.loadStart();
         mLocationTracker.connectLocation();
     }
 
@@ -95,14 +71,34 @@ public class MapViewPresenter implements GoogleMap.OnMapLoadedCallback, Callback
         mLocationTracker.disconnectLocation();
     }
 
+    public void moveMap(LatLng latLng) {
+        mMapViewContract.moveLocation(latLng);
+    }
+
+    /*request api*/
+    @Override
+    public void success(List<ResultMarker> resultMarkers, Response response) {
+        for (ResultMarker marker : resultMarkers) {
+            mMapViewContract.addMarker(marker);
+        }
+    }
+
+    @Override
+    public void failure(RetrofitError error) {
+        mMapViewContract.showError(error.getMessage());
+    }
+
+    /*search location*/
     @Override
     public void loadLocationError() {
         mMapViewContract.showErrorLocation();
+        mMapViewContract.loadFinish();
     }
 
     @Override
     public void loadLocationSucces(Location location) {
         mMyLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        mMapViewContract.loadFinish();
         mMapViewContract.addMarkerLocation(new ResultMarker("ME", String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude())));
     }
 
